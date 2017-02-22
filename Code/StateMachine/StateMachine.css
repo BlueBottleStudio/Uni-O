@@ -1,0 +1,12 @@
+body {
+	background-color: grey;
+	text-align: center;
+}
+
+#stage {
+	background-color: black;
+	width: 800px;
+	height: 640px;
+	margin-left: auto;
+	margin-right: auto;
+}
