@@ -26,7 +26,7 @@ var mouse = {x:0, y:0}; // Stores mouse position in canvas.
 
 const fps = 30; // or 60. The game's set frame rate all update functions will run at.
 const fpsMS = 1/fps*1000; // The frames per second as a millisecond interval.
-var updateIval;
+var updateIval = null;
 
 window.addEventListener("load", loadAssets);
 canvas.addEventListener("mousemove", updateMouse);
@@ -67,6 +67,7 @@ function changeState(stateToRun)
 		lastState = currState;
 		currState = stateToRun;
 		states[currState].enter(); // Will call the appropriate enter function of the current state. For initialization, etc.
+		if(updateIval != null) clearInterval(updateIval);
 		updateIval = setInterval(states[currState].update, fpsMS);
 	}
 	else
@@ -109,6 +110,7 @@ function enterGame()
     Banner.parentNode.removeChild(Banner);
 	renderMenu = false;
 	clearInterval(updateIval);
+	updateIval = null;
 	setGameToStart();
 }
 
