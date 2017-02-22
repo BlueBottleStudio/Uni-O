@@ -1,18 +1,10 @@
-var _stage = document.getElementById("stage");
-var _canvas = document.querySelector("canvas");
-_canvas.width = 800;
-_canvas.height = 640;
-var surface = _canvas.getContext("2d");
+var stage = document.getElementById("stage");
+var canvas = document.getElementById("canvas");
+var surface = canvas.getContext("2d");
+canvas.width = 800;
+canvas.height = 640;
 
-const SIZE = 35;
-const BULLETSPEED = 15;
-
-var person = { x: 0, y: 0, image: null };
-person.image = new Image();
-person.image.src = "img/Movements.png";
-var persons = {img:null, x:320, y:320, dir:1, idle:true};
-var speed = 10;
-
+var renderMenu = true;
 
 /* states is an array of objects where each object is a state with an enter, update and exit function. These
    functions get called in the changeState function. */
@@ -37,8 +29,8 @@ const fpsMS = 1/fps*1000; // The frames per second as a millisecond interval.
 var updateIval;
 
 window.addEventListener("load", loadAssets);
-_canvas.addEventListener("mousemove", updateMouse);
-_canvas.addEventListener("click", onMouseClick);
+canvas.addEventListener("mousemove", updateMouse);
+canvas.addEventListener("click", onMouseClick);
 
 // The loadAssets function currently only creates the Image objects for all the buttons.
 function loadAssets(event)
@@ -72,11 +64,6 @@ function changeState(stateToRun)
 {
 	if (stateToRun >= 0 && stateToRun < states.length) // Just a check to see if the state to run is valid.
 	{
-		if (currState >= 0) // The only time this doesn't run is the very first state change.
-		{
-			clearInterval(updateIval); // Stops the current setInterval method, which is the update function for the current state.
-			states[currState].exit(); // Will call the appropriate exit function of the current state.
-		}
 		lastState = currState;
 		currState = stateToRun;
 		states[currState].enter(); // Will call the appropriate enter function of the current state. For initialization, etc.
@@ -88,23 +75,24 @@ function changeState(stateToRun)
 
 function enterMenu()
 {
-    var _stage = document.getElementById("stage");
-    var _canvas = document.querySelector("canvas");
-    _canvas.width = 800;
-    _canvas.height = 640;
-    var surface = _canvas.getContext("2d");
+    var stage = document.getElementById("stage");
+    var canvas = document.getElementById("canvas");
+    canvas.width = 800;
+    canvas.height = 640;
+    var surface = canvas.getContext("2d");
     console.log("Entering menu state.");
-   _stage.style.backgroundImage = "url('img/MainMenu.png')";
+   stage.style.backgroundImage = "url('img/MainMenu.png')";
     Banner = document.createElement("IMG");
     Banner.src = "img/Title.png";
     Banner.style = "position: absolute; top: 5%; left: 40%;";
     stage.appendChild(Banner);
     activeBtns = [ buttons[0], buttons[1] ];
+	renderMenu = true;
 }
 
 function updateMenu()
 {
-	console.log("In menu state.");
+	if(renderMenu == false) return;
 	checkButtons();
 	render();
 }
@@ -116,25 +104,17 @@ function exitMenu()
 
 function enterGame()
 {
-    var canvas = document.querySelector("canvas");
-    canvas.width = 540;
-    canvas.height = 640;
-    person.x = canvas.width/2;
-    person.y = 560;
-    var surface = canvas.getContext("2d");
-    var grid = [];
-    var gameBackground = new Image();
-    gameBackground.src = "img/Game.png";
-    var collided;
     console.log("Entering game state.");
-  	_stage.style.backgroundImage = "url('img/Game.png')";
-    activeBtns = [ buttons[2]];
+    activeBtns = [buttons[2]];
     Banner.parentNode.removeChild(Banner);
+	renderMenu = false;
+	clearInterval(updateIval);
+	setGameToStart();
 }
 
 function updateGame()
 {
-	console.log("In game state.");
+	if(renderMenu == false) return;
 	checkButtons();
 	render();
 }
@@ -147,14 +127,14 @@ function exitGame()
 function enterHelp()
 {
     console.log("Entering help state.");
-    _stage.style.backgroundImage = "url('img/HelpScreen.png')";
+    stage.style.backgroundImage = "url('img/HelpScreen.png')";
     activeBtns = [ buttons[2] ];
     Banner.parentNode.removeChild(Banner);
 }
 
 function updateHelp()
 {
-	console.log("In help state.");
+	if(renderMenu == false) return;
 	checkButtons();
 	render();
 }
@@ -196,8 +176,13 @@ function onMouseClick()
 // Basically being used just for each button. Draws the button image based on its over property.
 function render()
 {
-	surface.clearRect(0, 0, _canvas.width, _canvas.height);
+	surface.clearRect(0, 0, canvas.width, canvas.height);
 	document.body.style.cursor = "default";
+	RenderActiveButtons();
+}
+
+function RenderActiveButtons()
+{
 	for (var i = 0; i < activeBtns.length; i++)
 	{
 		if (activeBtns[i].over == true)
@@ -205,8 +190,7 @@ function render()
 			surface.drawImage(activeBtns[i].imgO, activeBtns[i].x, activeBtns[i].y);
 			document.body.style.cursor = "pointer";
 		}
-		else
-			surface.drawImage(activeBtns[i].img, activeBtns[i].x, activeBtns[i].y);
+		else surface.drawImage(activeBtns[i].img, activeBtns[i].x, activeBtns[i].y);
 	}
 }
 
@@ -222,13 +206,13 @@ function onHelpClick()
 
 function onExitClick()
 {
-		changeState(0);
+	changeState(0);
 }
 
 // This function sets the mouse x and y position as it is on the canvas where 0,0 is top-left of canvas.
 function updateMouse(event)
 {
-	var rect = _canvas.getBoundingClientRect();
+	var rect = canvas.getBoundingClientRect();
 	mouse.x = event.clientX - rect.left;
     mouse.y = event.clientY - rect.top;
 }	
