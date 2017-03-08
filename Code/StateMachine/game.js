@@ -27,10 +27,10 @@ window.addEventListener("keyup", onKeyUp);
 
 function setGameToStart()
 {    
-	stage.style.backgroundColor = "yellow";
+	stage.style.backgroundColor = "black";
 	stage.style.backgroundImage = null;
 	person.image = new Image();
-	person.image.src = "../backgrounds/player/Jono/Movements.png";
+	person.image.src = "../backgrounds/player/Liz/movements.png";
 	person.x = 300;
 	person.y = 560;
 	canvas.width = 640;
@@ -187,6 +187,7 @@ function rendergame()
 		surface.fill();
 		surface.lineWidth = 2;
 		surface.strokeStyle = "red";
+
 		surface.stroke();
 		surface.closePath();
 	}
