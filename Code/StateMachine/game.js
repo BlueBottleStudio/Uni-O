@@ -33,7 +33,7 @@ function setGameToStart()
 	person.image.src = "../backgrounds/player/Liz/movements.png";
 	person.x = 300;
 	person.y = 560;
-	canvas.width = 640;
+	canvas.width = 800;
 	canvas.height = 640;
 	canvas.style = "position: absolute; top:15px; left: 475px;";
 	console.log("Entered game state, initializing..");
@@ -142,11 +142,11 @@ function moveBullets()
 function checkInput()
 {
 
-	if (leftPressed == true && person.x > 0)
+	if (leftPressed == true && person.x > 130)
 	{
 		person.x = person.x - speed;
 	}
-	if (rightPressed == true && person.x < 630 - SIZE)
+	if (rightPressed == true && person.x < 700 - SIZE)
 	{
 		person.x = person.x + speed;
 	}
@@ -154,7 +154,7 @@ function checkInput()
 	{
 		person.y = person.y - speed;
 	}
-	if (downPressed == true && person.y < 630 - SIZE)
+	if (downPressed == true && person.y < 660 - SIZE)
 	{
 		person.y = person.y + speed;
 	}
