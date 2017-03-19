@@ -1,5 +1,4 @@
 const SIZE = 35; 
-const BULLETSPEED = 15;
 
 var GameInterval = null;
 
@@ -13,12 +12,10 @@ gameBackground.src = "../backgrounds/Game.png";
 var cricle = new Image();
 var collided;
 
+var gameWidth = 540;
+var gameHeight = 640;
 var playerBulletImage = new Image();
 playerBulletImage.src = "../Sprites/bullets/player shots/ball_dot.png";
-
-var bulletArray = [];
-var playerBulletFreq = 0;
-var playerBulletDelay = 3;
 
 var upPressed = false;
 var downPressed = false;
@@ -29,6 +26,16 @@ var jPressed = false;
 var kPressed = false;
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
+
+//Player Variables
+
+var lives = 5;
+var bulletArray = [];
+var playerBulletFreq = 6;
+var playerBulletDelay = 7;
+var deathInvincibility = 100;
+var invincibilityTimer = 0;
+var canDie = true;
 
 //Enemy Variables
 
@@ -45,7 +52,17 @@ var id = 0;
 
 //Temporary spawning
 var spawnFreq = 0;
-var spawnDelay = 40;
+var spawnDelay = 15;
+
+//Kill counter is a milestone variable for unlocked skills.
+var killCounter = 0;
+
+//Skills
+var currentSkill = 1;
+var totalSkills = 5;
+
+//UI
+var uiBackgroundImage = new Image();
 
 function setGameToStart()
 {    
@@ -56,7 +73,7 @@ function setGameToStart()
 	person.image.src = "../backgrounds/player/Jono/Movements.png";
 	person.x = 280;
 	person.y = 560;
-	canvas.width = 540;
+	canvas.width = 800;
 	canvas.height = 640;
 	canvas.style = "position: absolute; top:8px; left: 560px;";
 	console.log("Entered game state, initializing..");
@@ -69,6 +86,7 @@ function gameUpdate()
 	moveBullets();
 	rendergame();
     spawnRandomEnemies();
+	updateSkills();
     updateEnemies();
     deleteEnemies();
     updateBullets();
@@ -103,17 +121,17 @@ function onKeyDown(event)
 		case 74 :
 			if (jPressed == false)
 				jPressed = true;
-				spawnBullet();
 			break
 		case 75 :
 			if (kPressed == false)
 				kPressed = true;
 			speed = 5;
-			break;        
+			break;   
 		case 80 :
 			    allEnemies.push(new Enemy(id, enemyimage, 100, 100, Math.floor((Math.random() * 3) + 1), Math.floor((Math.random() * 3) + 1), 30, 30, 0, 5));
 			    id++;
 			    break;
+				
 	}
 }
 function onKeyUp(event)
@@ -133,50 +151,14 @@ function onKeyUp(event)
 		case 83: 
 			downPressed = false; break;
 		case 74 :
-			jPressed = false;break;
+		{
+			jPressed = false;
+		}break;
 		case 75 :
 			kPressed =false;
 			speed = 10;
 			break;
 	}
-}
-
-function spawnRandomEnemies()
-{
-    if (spawnFreq == spawnDelay) {
-        allEnemies.push(new Enemy(id, enemyimage, (canvas.width / 2) - (enemyimage.width/2), Math.floor((Math.random() * 50) + 1), Math.floor((Math.random() * 7) - 3), Math.floor((Math.random() * 4) + 1), 30, 30, 0, 5));
-        id++;
-        spawnFreq = 0;
-    }
-    else
-        spawnFreq++;
-}
-
-
-function spawnBullet()
-{
-    var tempBullet = new PlayerBullet(person.x + 9, person.y-5, BULLETSPEED);
-    bulletArray.push(tempBullet);
-}
-
-function moveBullets()
-{
-    for (var bullet = 0; bullet < bulletArray.length;bullet++)
-    {
-        if (bulletArray[bullet].y > 0)
-            bulletArray[bullet].move();
-        else
-            bulletArray.splice(bullet, 1);
-    }
-}
-function PlayerBullet(x, y, bulletSpeed) {
-    this.x = x;
-    this.y = y;
-    this.bulletSpeed = bulletSpeed;
-    this.move = function()
-    {
-        this.y = this.y - this.bulletSpeed;
-    }
 }
 
 function checkInput()
@@ -186,7 +168,7 @@ function checkInput()
 	{
 		person.x = person.x - speed;
 	}
-	if (rightPressed == true && person.x < canvas.width - SIZE)
+	if (rightPressed == true && person.x < gameWidth - SIZE)
 	{
 		person.x = person.x + speed;
 	}
@@ -194,7 +176,7 @@ function checkInput()
 	{
 		person.y = person.y - speed;
 	}
-	if (downPressed == true && person.y < canvas.height - SIZE)
+	if (downPressed == true && person.y < gameHeight - SIZE)
 	{
 		person.y = person.y + speed;
 	}
@@ -207,6 +189,84 @@ function checkInput()
 	        playerBulletFreq++;
 	}
 }
+
+function spawnRandomEnemies()
+{
+    if (spawnFreq == spawnDelay) {
+        allEnemies.push(new Enemy(id, enemyimage, (gameWidth / 2) - (enemyimage.width/2), Math.floor((Math.random() * 50) + 1), Math.floor((Math.random() * 7) - 3), Math.floor((Math.random() * 4) + 1), 30, 30, 0, 5));
+        id++;
+        spawnFreq = 0;
+    }
+    else
+        spawnFreq++;
+}
+
+
+function updateSkills()
+{
+if (killCounter >= (currentSkill*10) && currentSkill < totalSkills)
+	{
+	killCounter=0;
+	currentSkill++;
+	if (currentSkill == 1)
+		playerBulletDelay = 7;
+	else if (currentSkill == 2)
+		playerBulletDelay = 5;
+	else if (currentSkill == 4)
+		playerBulletDelay = 3;
+	
+	playerBulletFreq = playerBulletDelay-1;
+	}
+}
+
+function spawnBullet()
+{
+	if (currentSkill == 1 || currentSkill == 2)
+	{
+    var tempBullet = new PlayerBullet(person.x + 9, person.y-5, 0, 15);
+    bulletArray.push(tempBullet);
+	}
+	else if (currentSkill == 3 || currentSkill == 4)
+	{
+    var tempBullet = new PlayerBullet(person.x + 9, person.y-5, 1, 15);
+    bulletArray.push(tempBullet);
+    var tempBullet = new PlayerBullet(person.x + 9, person.y-5, -1, 15);
+    bulletArray.push(tempBullet);
+	}
+	else if (currentSkill == 5)
+	{
+    var tempBullet = new PlayerBullet(person.x + 9, person.y-5, 0, 15);
+    bulletArray.push(tempBullet);
+    var tempBullet = new PlayerBullet(person.x + 9, person.y-5, 3, 15);
+    bulletArray.push(tempBullet);
+    var tempBullet = new PlayerBullet(person.x + 9, person.y-5, -3, 15);
+    bulletArray.push(tempBullet);
+	}
+}
+
+function moveBullets()
+{
+    for (var bullet = 0; bullet < bulletArray.length;bullet++)
+    {
+        if (bulletArray[bullet].y > 0)
+            bulletArray[bullet].move();
+        else
+            bulletArray.splice(bullet, 1);
+    }
+}
+
+function PlayerBullet(x, y,diretionX,diretionY) {
+    this.x = x;
+    this.y = y;
+    this.diretionX = diretionX;
+    this.diretionY = diretionY;
+    this.move = function()
+    {
+        this.y = this.y - this.diretionY;
+        this.x = this.x - this.diretionX;
+    }
+}
+
 
 //Enemy
 
@@ -271,11 +331,11 @@ function deleteEnemies() {
     for (var enemy = 0 ; enemy < allEnemies.length; enemy++) {
         if (allEnemies[enemy].xLocation + allEnemies[enemy].enemyImage.width < 0)
             allEnemies.splice(enemy, 1);
-        else if (allEnemies[enemy].xLocation > canvas.width)
+        else if (allEnemies[enemy].xLocation > gameWidth)
             allEnemies.splice(enemy, 1);
         else if (allEnemies[enemy].yLocation + allEnemies[enemy].enemyImage.height < 0)
             allEnemies.splice(enemy, 1);
-        else if (allEnemies[enemy].yLocation > canvas.height)
+        else if (allEnemies[enemy].yLocation > gameHeight)
             allEnemies.splice(enemy, 1);
     }
 }
@@ -310,16 +370,47 @@ function deleteBullets() {
     for (var bullet = 0 ; bullet < allEnemyBullets.length; bullet++) {
         if (allEnemyBullets[bullet].xLocation + allEnemyBullets[bullet].bulletImage.width < 0)
             allEnemyBullets.splice(bullet, 1);
-        else if (allEnemyBullets[bullet].xLocation - allEnemyBullets[bullet].bulletImage.width > canvas.width)
+        else if (allEnemyBullets[bullet].xLocation - allEnemyBullets[bullet].bulletImage.width > gameWidth)
             allEnemyBullets.splice(bullet, 1);
         else if (allEnemyBullets[bullet].yLocation + allEnemyBullets[bullet].bulletImage.height < 0)
             allEnemyBullets.splice(bullet, 1);
-        else if (allEnemyBullets[bullet].yLocation - allEnemyBullets[bullet].bulletImage.height > canvas.height)
+        else if (allEnemyBullets[bullet].yLocation - allEnemyBullets[bullet].bulletImage.height > gameHeight)
             allEnemyBullets.splice(bullet, 1);
     }
 }
 
 function checkCollision() {
+
+	//Collision with player and enemy bullets.
+	if (allEnemyBullets.length > 0 && canDie == true)
+	for (var bullet = 0 ; bullet < allEnemyBullets.length; bullet++)
+	{
+	
+	if (allEnemyBullets[bullet].xLocation > person.x-5 &&
+		allEnemyBullets[bullet].xLocation < (person.x-5 + person.image.width) &&
+		allEnemyBullets[bullet].yLocation > person.y &&
+		allEnemyBullets[bullet].yLocation < (person.y + person.image.height))
+		{
+		console.log("Die");
+		person.x = 280;
+		person.y = 560;
+		lives--;
+		canDie = false;
+		}
+	}
+	else if (canDie == false)
+	{
+	if (invincibilityTimer == deathInvincibility)
+	{
+	console.log("Can Die Again");
+		canDie = true;
+		invincibilityTimer = 0;
+	}
+	else
+		invincibilityTimer ++;
+	}
+	
+	//Collision with enemy and player bullets.
     if (bulletArray.length > 0 && allEnemies.length > 0)
         for (var bullet = 0 ; bullet < bulletArray.length; bullet++) {
             for (var enemy = 0; enemy < allEnemies.length; enemy++) {
@@ -329,6 +420,7 @@ function checkCollision() {
                     bulletArray[bullet].y < (allEnemies[enemy].yLocation + allEnemies[enemy].enemyImage.height)) {
                     bulletArray.splice(bullet, 1);
                     allEnemies.splice(enemy, 1);
+					killCounter++;
                 }
             }
         }
@@ -337,9 +429,9 @@ function checkCollision() {
 function rendergame()
 {
 	RenderActiveButtons();
-	surface.clearRect(0,0,canvas.width,canvas.height);
+	surface.clearRect(0,0,gameWidth,canvas.height);
 	
-			surface.drawImage(gameBackground,0,0);
+		surface.drawImage(gameBackground,0,0);
 		surface.drawImage(person.image, person.x, person.y);
 		if (bulletArray.length > 0) {
 			    for (var i = 0; i < bulletArray.length; i++) {
@@ -355,6 +447,15 @@ function rendergame()
 			    surface.drawImage(allEnemies[enemy].enemyImage, allEnemies[enemy].xLocation, allEnemies[enemy].yLocation);
 
 			}
-			console.log(allEnemies.length);
+				
+			//This is the right side of the game (the UI)
+			
+		surface.drawImage(gameBackground,540,0);
+		//console.log ("CurrentSkill : " + currentSkill + "   /  Kills : " + killCounter);
+		console.log ("Lives : " + lives);
+		//console.log (person.image.width + "/" + person.image.height);
+		//console.log (person.x + "/" + person.y);
+		//console.log (playerBulletDelay);
+		//console.log (playerBulletFreq);
 }
 
