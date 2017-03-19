@@ -33,7 +33,7 @@ var lives = 5;
 var bulletArray = [];
 var playerBulletFreq = 6;
 var playerBulletDelay = 7;
-var deathInvincibility = 100;
+var deathInvincibility = 50;
 var invincibilityTimer = 0;
 var canDie = true;
 
